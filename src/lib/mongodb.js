@@ -10,14 +10,6 @@
 
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI;
-
-if (!MONGODB_URI) {
-  throw new Error(
-    'Please define MONGODB_URI in your .env.local file'
-  );
-}
-
 /** @type {{ conn: mongoose.Connection | null; promise: Promise<mongoose.Connection> | null }} */
 let cached = global._mongooseCache;
 
@@ -30,6 +22,11 @@ if (!cached) {
  * @returns {Promise<mongoose.Connection>}
  */
 export async function connectDB() {
+  const MONGODB_URI = process.env.MONGODB_URI;
+
+  if (!MONGODB_URI) {
+    throw new Error('Please define MONGODB_URI in your .env.local file');
+  }
   if (cached.conn) return cached.conn;
 
   if (!cached.promise) {
