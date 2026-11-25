@@ -1,5 +1,6 @@
 import localFont from "next/font/local";
 import "./globals.css";
+import { headers } from "next/headers";
 import Header from "@/components/Layout/Header";
 import Footer from "@/components/Layout/Footer";
 
@@ -29,13 +30,23 @@ export const metadata = {
   description: "Next.js App Router + JavaScript + Tailwind CSS + shadcn/ui starter",
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname") || headersList.get("x-invoke-path") || "";
+  const isAdmin = pathname.startsWith("/admin");
+
   return (
     <html lang="en" className={`${ibmPlexSans.variable} ${generalSans.variable}`}>
-      <body suppressHydrationWarning>
-        <Header />
-        <main className="min-h-[calc(100vh-8rem)]">{children}</main>
-        <Footer />
+      <body suppressHydrationWarning className={isAdmin ? "bg-[#F4F6FB] font-sans antialiased" : ""}>
+        {isAdmin ? (
+          children
+        ) : (
+          <>
+            <Header />
+            <main className="min-h-[calc(100vh-8rem)]">{children}</main>
+            <Footer />
+          </>
+        )}
       </body>
     </html>
   );

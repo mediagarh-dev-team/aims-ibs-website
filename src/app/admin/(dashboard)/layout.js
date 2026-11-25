@@ -1,0 +1,7 @@
+'use client';
+
+import DashboardShell from '@/components/admin/DashboardShell';
+
+export default function DashboardLayout({ children }) {
+  return <DashboardShell>{children}</DashboardShell>;
+}
