@@ -2,31 +2,47 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Plus } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { getOptimizedImage } from '@/utils/image';
 
 const viewport = { once: true, amount: 0.25 };
 
-const PANELS = [
+const DEFAULT_PANELS = [
   {
     label: 'Skills',
     desc: 'MS Office, Advanced Excel, AI/ML, Investment Banking, Digital Marketing',
-    src: 'images/home/skills-img-bg.webp',
+    image: { url: 'images/home/skills-img-bg.webp' },
   },
   {
     label: 'Practical Exposure',
-    desc: 'Add content for Practical Exposure here.',
-    src: 'images/home/skills-img-bg.webp',
+    desc: 'Industry visits, live projects, internships and real-world case studies.',
+    image: { url: 'images/home/skills-img-bg.webp' },
   },
   {
     label: 'Attitude & Personality',
-    desc: 'Add content for Attitude & Personality here.',
-    src: 'images/home/skills-img-bg.webp',
+    desc: 'Soft skills, leadership, communication, and professional grooming.',
+    image: { url: 'images/home/skills-img-bg.webp' },
   },
-  { label: 'Recreation', desc: 'Add content for Recreation here.', src: 'images/home/skills-img-bg.webp' },
-  { label: 'Knowledge', desc: 'Add content for Knowledge here.', src: 'images/home/skills-img-bg.webp' },
+  {
+    label: 'Recreation',
+    desc: 'Sports, cultural events, clubs, and wellness activities.',
+    image: { url: 'images/home/skills-img-bg.webp' },
+  },
+  {
+    label: 'Knowledge',
+    desc: 'Academic rigour, research, global business knowledge, and certifications.',
+    image: { url: 'images/home/skills-img-bg.webp' },
+  },
 ];
 
-export default function SparkModel() {
-  const [active, setActive] = useState(0); // first panel open by default; one is always open
+export default function SparkModel({ cmsData }) {
+  const [active, setActive] = useState(0);
+
+  const headingLight = cmsData?.headingLight ?? 'Our Secret Sauce:';
+  const headingBold = cmsData?.headingBold ?? 'The SPARK Model';
+  const subtext =
+    cmsData?.subtext ??
+    'AIMS IBS offers a 360° training ecosystem that builds everything from core skills to confidence.';
+  const panels = cmsData?.panels?.length ? cmsData.panels : DEFAULT_PANELS;
 
   return (
     <motion.section
@@ -46,8 +62,8 @@ export default function SparkModel() {
             }}
             className="text-[28px] text-white sm:text-[32px] lg:text-[48px]"
           >
-            <span className="font-light">Our Secret Sauce: </span>
-            <span className="font-semibold italic">The SPARK Model</span>
+            <span className="font-light">{headingLight} </span>
+            <span className="font-semibold italic">{headingBold}</span>
           </motion.h2>
           <motion.p
             variants={{
@@ -56,48 +72,36 @@ export default function SparkModel() {
             }}
             className="mx-auto mt-3 text-sm text-white/90 lg:text-base"
           >
-            AIMS IBS offers a 360° training ecosystem that builds everything from core skills to confidence.
+            {subtext}
           </motion.p>
         </div>
 
-        {/* Accordion: stacked rows on mobile, vertical bars from md up */}
         <motion.ul
           variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.12 } } }}
           className="mt-8 flex flex-col gap-2 md:h-110 md:flex-row lg:mt-11.25 lg:h-130 lg:gap-2.5 xl:h-150.75"
         >
-          {PANELS.map((p, i) => {
+          {panels.map((p, i) => {
             const open = active === i;
-
             return (
               <motion.li
-                key={p.label}
+                key={i}
                 variants={{
                   hidden: { opacity: 0, y: 40 },
                   visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: 'easeOut' } },
                 }}
-                className={`relative overflow-hidden transition-[flex-grow,height] duration-700 ease-in-out md:h-full md:basis-[52px] lg:basis-[62px] ${
-                  open ? 'h-80 grow' : 'h-14 grow-0'
-                }`}
+                className={`relative overflow-hidden transition-[flex-grow,height] duration-700 ease-in-out md:h-full md:basis-[52px] lg:basis-[62px] ${open ? 'h-80 grow' : 'h-14 grow-0'}`}
               >
-                {/* Expanded layer: image + content */}
                 <div aria-hidden={!open} className="absolute inset-0 bg-[#2A1F66]">
                   <Image
-                    src={process.env.IMG_PATH + p.src}
+                    src={getOptimizedImage(p.image?.url || p.src || 'images/home/skills-img-bg.webp', { width: 1200 })}
                     alt={`${p.label} at AIMS IBS`}
                     fill
                     sizes="(min-width: 1024px) 1000px, 100vw"
-                    quality={100}
-                    unoptimized
-                    className={`object-cover transition-transform duration-1200 ease-out ${
-                      open ? 'scale-100' : 'scale-110'
-                    }`}
+                    className={`object-cover transition-transform duration-1200 ease-out ${open ? 'scale-100' : 'scale-110'}`}
                   />
                   <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/25 to-transparent" />
-
                   <div
-                    className={`absolute inset-x-0 bottom-0 p-5 transition-all duration-500 sm:p-8 lg:p-14 ${
-                      open ? 'translate-y-0 opacity-100 delay-300' : 'translate-y-4 opacity-0'
-                    }`}
+                    className={`absolute inset-x-0 bottom-0 p-5 transition-all duration-500 sm:p-8 lg:p-14 ${open ? 'translate-y-0 opacity-100 delay-300' : 'translate-y-4 opacity-0'}`}
                   >
                     <div className="min-w-60 max-w-135">
                       <h3 className="text-[24px] font-medium uppercase tracking-wide text-white sm:text-[28px] lg:text-[33px]">
@@ -109,16 +113,13 @@ export default function SparkModel() {
                   </div>
                 </div>
 
-                {/* Collapsed layer: "+" and label */}
                 <button
                   type="button"
                   onClick={() => setActive(i)}
                   aria-expanded={open}
                   aria-label={`Open ${p.label}`}
                   tabIndex={open ? -1 : 0}
-                  className={`group absolute inset-0 z-10 flex items-center justify-between bg-[#F6F7FF] px-4 text-left transition-opacity duration-500 hover:bg-white focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-orange md:flex-col-reverse md:px-0 md:py-4 ${
-                    open ? 'pointer-events-none opacity-0' : 'opacity-100 delay-300'
-                  }`}
+                  className={`group absolute inset-0 z-10 flex items-center justify-between bg-[#F6F7FF] px-4 text-left transition-opacity duration-500 hover:bg-white focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-orange md:flex-col-reverse md:px-0 md:py-4 ${open ? 'pointer-events-none opacity-0' : 'opacity-100 delay-300'}`}
                 >
                   <span className="text-[16px] font-medium uppercase tracking-wide text-black transition-colors group-hover:text-brand-orange md:rotate-180 md:text-[20px] md:[writing-mode:vertical-rl]">
                     {p.label}

@@ -1,8 +1,16 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { getOptimizedImage } from '@/utils/image';
 
-export default function JoinCta() {
+export default function JoinCta({ cmsData }) {
+  const headingLine1 = cmsData?.headingLine1 ?? 'Ready to join the';
+  const headingBold = cmsData?.headingBold ?? 'Top Business School';
+  const headingLine2 = cmsData?.headingLine2 ?? 'in Bangalore?';
+  const ctaLabel = cmsData?.ctaLabel ?? 'Apply Now';
+  const ctaHref = cmsData?.ctaHref ?? '/apply-now';
+  const bgImage = cmsData?.bgImage?.url ?? null;
+
   return (
     <motion.section
       initial="hidden"
@@ -10,19 +18,15 @@ export default function JoinCta() {
       viewport={{ once: true, amount: 0.25 }}
       className="relative bg-white overflow-hidden"
     >
-      {/* Background image */}
-      <div className="relative h-[260px]  overflow-hidden sm:h-[340px] md:h-[420px] lg:h-auto lg:aspect-[943/333]">
+      <div className="relative h-[260px] overflow-hidden sm:h-[340px] md:h-[420px] lg:h-auto lg:aspect-[943/333]">
         <motion.div
-          variants={{
-            hidden: { scale: 1.12 },
-            visible: { scale: 1, transition: { duration: 1.6, ease: 'easeOut' } },
-          }}
+          variants={{ hidden: { scale: 1.12 }, visible: { scale: 1, transition: { duration: 1.6, ease: 'easeOut' } } }}
           aria-hidden="true"
-          className="absolute inset-0 bg-[url('/images/home/cta-bg-img-aiims.webp')] bg-cover bg-center"
+          className={`absolute inset-0 ${bgImage ? '' : "bg-[url('/images/home/cta-bg-img-aiims.webp')]"} bg-cover bg-center`}
+          style={bgImage ? { backgroundImage: `url(${getOptimizedImage(bgImage, { width: 1920 })})` } : undefined}
         />
       </div>
 
-      {/* White box: below the image on mobile, top-right corner from md up */}
       <motion.div
         variants={{
           hidden: { opacity: 0, x: 80 },
@@ -41,10 +45,10 @@ export default function JoinCta() {
           }}
           className="text-xl leading-snug sm:text-2xl lg:text-[clamp(1.375rem,1.46vw,1.75rem)]"
         >
-          <span className="block font-light">Ready to join the</span>
+          <span className="block font-light">{headingLine1}</span>
           <span className="block">
-            <span className="font-semibold italic">Top Business School</span>
-            <span className="font-light"> in Bangalore?</span>
+            <span className="font-semibold italic">{headingBold}</span>
+            <span className="font-light"> {headingLine2}</span>
           </span>
         </motion.h2>
 
@@ -56,10 +60,10 @@ export default function JoinCta() {
           className="mt-5"
         >
           <Link
-            href="/apply-now"
+            href={ctaHref}
             className="group inline-flex items-center gap-2 rounded-[3px] bg-brand-orange px-6 py-3.5 text-xs font-medium uppercase tracking-wide text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#d63f14] hover:shadow-[0_10px_20px_rgba(240,75,29,0.3)] lg:text-[13px]"
           >
-            Apply Now
+            {ctaLabel}
             <ArrowRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-1" />
           </Link>
         </motion.div>

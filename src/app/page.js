@@ -1,15 +1,30 @@
-import MainHome from "@/components/Home/MainHome";
-import { generateSEO } from "@/_helper/seo";
+import MainHome from '@/components/Home/MainHome';
+import { getSeoData } from '@/lib/getSeoData';
 
-export const metadata = generateSEO({
-  title: "MBA & PGDM in Bangalore | AIMS IBS Business School",
-  description: "AIMS IBS is a top-ranked business school in Bangalore offering MBA, PGDM and executive management programs with global collaborations and 100% placement support.",
-  keywords: "MBA Bangalore, PGDM Bangalore, business school Bangalore, AIMS IBS, management college",
-  image: "/images/home/life-at-ibs-img-21.webp",
-  path: "/",
-  index: true,
-});
+export async function generateMetadata() {
+  return getSeoData('home');
+}
 
-export default function HomePage() {
-  return <MainHome />;
+async function getHomePageContent() {
+  try {
+    const baseUrl =
+      process.env.NEXT_PUBLIC_SITE_URL?.startsWith('http')
+        ? process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '')
+        : 'http://localhost:3000';
+
+    const res = await fetch(`${baseUrl}/api/pages/home`, {
+      next: { revalidate: 60 }, // revalidate every 60 seconds
+    });
+
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json?.data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export default async function HomePage() {
+  const homeData = await getHomePageContent();
+  return <MainHome data={homeData} />;
 }

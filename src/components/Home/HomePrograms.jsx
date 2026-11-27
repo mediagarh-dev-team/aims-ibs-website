@@ -2,9 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, ChevronRight } from 'lucide-react';
+import { getOptimizedImage } from '@/utils/image';
 
-const MASTERS = {
-  image: 'images/home/course-img-1.webp',
+/* ── Static defaults (used when no CMS data is published) ─────── */
+const DEFAULT_MASTERS = {
+  image: { url: 'images/home/course-img-1.webp', alt: 'MBA + PGPM' },
   href: '/programs/pg/mba-pgpm',
   meta: [
     { label: 'Duration', value: '2 Years' },
@@ -22,19 +24,20 @@ const MASTERS = {
   ],
 };
 
-const BACHELORS = [
+const DEFAULT_BACHELORS = [
   {
     prefix: 'Bachelor of',
     name: 'Business Administration (BBA)',
-    image: 'images/home/course-img-2.webp',
+    image: { url: 'images/home/course-img-2.webp', alt: 'BBA' },
     href: '/programs/ug/bba',
     tags: ['3 Years', '6 Specialisations', '8 Certifications'],
     points: ['Personality & Career Readiness', 'UGC Recognised Degree', 'AI & Digital Marketing Enabled'],
+    affiliatedTo: 'Bangalore University',
   },
   {
     prefix: 'Bachelor of',
     name: 'Computer Applications (BCA)',
-    image: 'images/home/course-img-3.webp',
+    image: { url: 'images/home/course-img-3.webp', alt: 'BCA' },
     href: '/programs/ug/bca',
     tags: ['3 Years', '3 Specialisations', '9 Certifications'],
     points: [
@@ -42,17 +45,20 @@ const BACHELORS = [
       'Hands-On Coding & Project-Based Learning',
       'Technical Certifications Included',
     ],
+    affiliatedTo: 'Bangalore University',
   },
   {
     prefix: 'Bachelor of',
     name: 'Commerce (B.Com)',
-    image: 'images/home/course-img-4.webp',
+    image: { url: 'images/home/course-img-4.webp', alt: 'B.Com' },
     href: '/programs/ug/bcom',
     tags: ['3 Years', '5 Specialisations', '7 Certifications'],
     points: ['UGC-Recognized B.Com Degree', 'End-To-End Placement Support', 'Practical Exposure'],
+    affiliatedTo: 'Bangalore University',
   },
 ];
 
+/* ── Shared UI atoms ─────────────────────────────────────────── */
 function SectionTag({ children }) {
   return (
     <span className="inline-block bg-brand-violet px-3 py-1.5 text-[10px] font-medium uppercase tracking-wide text-white sm:text-[16px]">
@@ -64,8 +70,8 @@ function SectionTag({ children }) {
 function BulletList({ items, className = '' }) {
   return (
     <ul className={`2xl:space-y-2 space-y-1 ${className}`}>
-      {items.map((item) => (
-        <li key={item} className="flex items-start 2xl:gap-2.5 gap-2">
+      {items.map((item, i) => (
+        <li key={i} className="flex items-start 2xl:gap-2.5 gap-2">
           <span className="mt-[0.5em] size-1 shrink-0 rounded-full bg-brand-orange" />
           <span>{item}</span>
         </li>
@@ -74,13 +80,26 @@ function BulletList({ items, className = '' }) {
   );
 }
 
-export default function HomePrograms() {
+/* ── Component ───────────────────────────────────────────────── */
+export default function HomePrograms({ cmsData }) {
   const sectionRef = useRef(null);
   const bachelorRef = useRef(null);
   const [inView, setInView] = useState(false);
   const [startY, setStartY] = useState(null);
 
-  // Play the blue background animation once, the first time the section is reached
+  // Merge CMS data with defaults
+  const masters = cmsData?.masters ? { ...DEFAULT_MASTERS, ...cmsData.masters } : DEFAULT_MASTERS;
+  const bachelors = cmsData?.bachelors?.length ? cmsData.bachelors : DEFAULT_BACHELORS;
+  const sectionTitle = cmsData?.sectionTitle ?? 'Explore Programs';
+
+  // Helper to get image src from either CMS image object or legacy string path
+  const imgSrc = (imgField, fallback) => {
+    if (!imgField) return getOptimizedImage(fallback);
+    if (typeof imgField === 'string') return getOptimizedImage(imgField);
+    return getOptimizedImage(imgField.url || fallback);
+  };
+
+  // Animate background blue panel
   useEffect(() => {
     const el = sectionRef.current;
     if (!el) return;
@@ -97,7 +116,6 @@ export default function HomePrograms() {
     return () => io.disconnect();
   }, []);
 
-  // Default blue start = just above the Bachelor's block (works on every screen size)
   useEffect(() => {
     const section = sectionRef.current;
     const block = bachelorRef.current;
@@ -120,7 +138,7 @@ export default function HomePrograms() {
 
   return (
     <section ref={sectionRef} className="relative isolate overflow-hidden bg-white pb-16 pt-12 lg:pb-20 lg:pt-20">
-      {/* Blue background: half by default, expands to full on first scroll */}
+      {/* Blue background */}
       <div
         aria-hidden="true"
         className={`absolute inset-0 -z-10 bg-[#3F2E8F] bg-[url('/images/home/course-bg-image.webp')] bg-cover bg-top will-change-[clip-path] ${
@@ -142,16 +160,15 @@ export default function HomePrograms() {
             {/* Image */}
             <div className="relative aspect-[4/3] w-full shrink-0 lg:aspect-auto 2xl:w-[538px] lg:w-[400px]">
               <Image
-                src={process.env.IMG_PATH + MASTERS?.image}
-                alt="MBA + PGPM"
+                src={imgSrc(masters.image, 'images/home/course-img-1.webp')}
+                alt={masters.image?.alt || 'MBA + PGPM'}
                 fill
                 sizes="(min-width: 1024px) 530px, 100vw"
                 className="object-cover"
-                quality={100}
-                unoptimized
+                quality={90}
               />
               <Link
-                href={MASTERS.href}
+                href={masters.href || '/programs/pg/mba-pgpm'}
                 className="absolute bottom-3 left-1/2 inline-flex -translate-x-1/2 items-center gap-2 bg-brand-orange px-5 py-2.5 font-general-sans text-xs font-medium text-white transition-colors hover:bg-[#d63f14]"
               >
                 Know More <ArrowRight className="size-3.5" />
@@ -160,10 +177,9 @@ export default function HomePrograms() {
 
             {/* Content */}
             <div className="relative flex-1 overflow-hidden">
-              {/* Red hexa image (add /public/images/hexa-shape.webp) */}
               <div className="pointer-events-none absolute bottom-0 right-0 z-0 w-[150px] sm:w-[220px] lg:w-[300px]">
                 <Image
-                  src={process.env.IMG_PATH + 'images/home/cube-shap-2.webp'}
+                  src={getOptimizedImage('images/home/cube-shap-2.webp')}
                   alt=""
                   aria-hidden="true"
                   width={300}
@@ -173,17 +189,16 @@ export default function HomePrograms() {
               </div>
 
               <div className="relative z-10 flex h-full flex-col justify-center p-5 sm:p-8 lg:px-10 lg:py-8">
-                {/* Default content: moves up on hover (desktop) */}
                 <div className="lg:transition-transform lg:duration-500 lg:ease-out lg:group-focus-within:-translate-y-[24px] lg:group-hover:-translate-y-[74px]">
-                  <h3 className="text-xl leading-snug sm:text-2xl  lg:text-[22px] 2xl:text-[24px]">
+                  <h3 className="text-xl leading-snug sm:text-2xl lg:text-[22px] 2xl:text-[24px]">
                     <span className="font-semibold">Master of Business Administration</span> (MBA) + Postgraduate
                     Program in Management (PGPM)
                   </h3>
 
                   <div className="2xl:mt-6 lg:mt-4 mt-6 flex flex-wrap gap-y-4">
-                    {MASTERS.meta.map((item, i) => (
+                    {masters.meta?.map((item, i) => (
                       <div
-                        key={item.label}
+                        key={i}
                         className={`2xl:pr-5 lg:pr-3 pr-2 ${i > 0 ? 'border-l border-black/15 2xl:pl-5 lg:pl-2 pl-4' : ''}`}
                       >
                         <p className="text-xs text-black/60 sm:text-[12px]">{item.label}</p>
@@ -192,18 +207,18 @@ export default function HomePrograms() {
                     ))}
                   </div>
 
-                  <BulletList items={MASTERS.points} className="mt-6 text-sm 2xl:text-[14px]" />
+                  <BulletList items={masters.points || []} className="mt-6 text-sm 2xl:text-[14px]" />
                 </div>
 
-                {/* Specialisations: always visible on mobile/tablet, slide up on hover (desktop) */}
+                {/* Specialisations */}
                 <div className="mt-6 lg:invisible lg:absolute lg:bottom-6 lg:left-10 lg:right-10 lg:mt-0 lg:translate-y-8 lg:opacity-0 lg:transition-all lg:duration-500 lg:ease-out lg:group-focus-within:visible lg:group-focus-within:translate-y-0 lg:group-focus-within:opacity-100 lg:group-hover:visible lg:group-hover:translate-y-0 lg:group-hover:opacity-100">
                   <p className="mb-2 text-xs text-black/60 sm:text-sm">Specialization</p>
                   <div className="flex flex-wrap gap-2">
-                    {MASTERS.specialisations.map((s) => (
+                    {masters.specialisations?.map((s, i) => (
                       <Link
-                        key={s.label}
-                        href={s.href}
-                        className="inline-flex items-center gap-1.5 rounded-[3px] bg-[#3F2E8F] font-general-sans 2xl:px-3.5 px-2 lg:px-3 2xl:py-2 py-1.5 lg:py-1.5  text-xs font-medium text-white transition-colors hover:bg-brand-orange 2xl:text-sm lg:text-[12px]"
+                        key={i}
+                        href={s.href || '#'}
+                        className="inline-flex items-center gap-1.5 rounded-[3px] bg-[#3F2E8F] font-general-sans 2xl:px-3.5 px-2 lg:px-3 2xl:py-2 py-1.5 lg:py-1.5 text-xs font-medium text-white transition-colors hover:bg-brand-orange 2xl:text-sm lg:text-[12px]"
                       >
                         {s.label}
                         <ChevronRight className="size-3.5" />
@@ -221,12 +236,12 @@ export default function HomePrograms() {
           <SectionTag>Bachelor&apos;s</SectionTag>
 
           <div className="mt-[30px] grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {BACHELORS.map((item) => (
-              <article key={item.name} className="flex flex-col bg-white p-[12px]">
+            {bachelors.map((item, idx) => (
+              <article key={idx} className="flex flex-col bg-white p-[12px]">
                 <div className="relative aspect-[2.3/1.1] w-full">
                   <Image
-                    src={process.env.IMG_PATH + item.image}
-                    alt={`${item.prefix} ${item.name}`}
+                    src={imgSrc(item.image, `images/home/course-img-${idx + 2}.webp`)}
+                    alt={item.image?.alt || `${item.prefix} ${item.name}`}
                     fill
                     sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw"
                     className="object-cover"
@@ -239,22 +254,24 @@ export default function HomePrograms() {
                   </h3>
 
                   <div className="mt-4 flex flex-wrap gap-1.5">
-                    {item.tags.map((tag) => (
-                      <span key={tag} className="bg-[#3F2E8F] px-2 py-1 text-[11px] font-medium text-white">
+                    {item.tags?.map((tag, ti) => (
+                      <span key={ti} className="bg-[#3F2E8F] px-2 py-1 text-[11px] font-medium text-white">
                         {tag}
                       </span>
                     ))}
                   </div>
 
-                  <BulletList items={item.points} className="mt-4 flex-1 text-sm" />
+                  <BulletList items={item.points || []} className="mt-4 flex-1 text-sm" />
 
                   <div className="mt-5 flex items-center justify-between gap-3 border-t border-brand-purple pt-3">
                     <div>
                       <p className="text-[11px] text-black/60">Affiliated to:</p>
-                      <p className="lg:text-[19px] text-[18px] font-semibold sm:text-base">Bangalore University</p>
+                      <p className="lg:text-[19px] text-[18px] font-semibold sm:text-base">
+                        {item.affiliatedTo || 'Bangalore University'}
+                      </p>
                     </div>
                     <Link
-                      href={item.href}
+                      href={item.href || '#'}
                       className="inline-flex shrink-0 items-center gap-2 bg-brand-orange px-4 py-3 font-general-sans text-[11px] font-medium uppercase rounded-sm tracking-wide text-white transition-colors hover:bg-[#d63f14]"
                     >
                       Learn More <ArrowRight className="size-3.5" />

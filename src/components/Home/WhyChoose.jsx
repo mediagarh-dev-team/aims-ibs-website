@@ -1,8 +1,9 @@
 import { useRef, useState } from 'react';
 import { Play } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { getOptimizedImage, getOptimizedVideo } from '@/utils/image';
 
-export const viewport = { once: true, amount: 0.25 };
+const viewport = { once: true, amount: 0.25 };
 
 function VideoPlayer({ src, poster, title }) {
   const videoRef = useRef(null);
@@ -17,8 +18,8 @@ function VideoPlayer({ src, poster, title }) {
     <div className="relative aspect-video overflow-hidden rounded-md bg-black">
       <video
         ref={videoRef}
-        src={process.env.IMG_PATH + src}
-        poster={process.env.IMG_PATH + poster}
+        src={getOptimizedVideo(src)}
+        poster={getOptimizedImage(poster, { width: 960 })}
         preload="metadata"
         playsInline
         controls={playing}
@@ -40,7 +41,16 @@ function VideoPlayer({ src, poster, title }) {
   );
 }
 
-export default function WhyChoose() {
+export default function WhyChoose({ cmsData }) {
+  const headingLine1 = cmsData?.headingLine1 ?? '21 Reasons:';
+  const headingLine2 = cmsData?.headingLine2 ?? 'Why Choose';
+  const headingBold = cmsData?.headingBold ?? 'AIMS IBS';
+  const subtext =
+    cmsData?.subtext ??
+    'Still hesitant? Here is a list of reasons why students consider us the best business school in Bangalore.';
+  const videoUrl = cmsData?.videoUrl || 'images/home/reasons-video.mp4';
+  const videoPoster = cmsData?.videoPoster?.url || 'images/home/reasons-video-poster.webp';
+
   return (
     <motion.section
       variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.2 } } }}
@@ -52,7 +62,6 @@ export default function WhyChoose() {
     >
       <div className="custom-container">
         <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-12.5">
-          {/* Left: heading + text */}
           <motion.div variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.15 } } }}>
             <motion.h2
               variants={{
@@ -61,10 +70,10 @@ export default function WhyChoose() {
               }}
               className="text-[28px] text-white sm:text-4xl lg:text-[40px] lg:leading-[1.2]"
             >
-              <span className="block font-light">21 Reasons:</span>
+              <span className="block font-light">{headingLine1}</span>
               <span className="block">
-                <span className="font-light">Why Choose </span>
-                <span className="font-semibold italic">AIMS IBS</span>
+                <span className="font-light">{headingLine2} </span>
+                <span className="font-semibold italic">{headingBold}</span>
               </span>
             </motion.h2>
 
@@ -75,12 +84,10 @@ export default function WhyChoose() {
               }}
               className="mt-5 max-w-112.5 text-sm leading-relaxed text-white/90 lg:text-[16px]"
             >
-              Still hesitant? Here is a <strong className="font-semibold">list of reasons</strong> why students consider
-              us the best <strong className="font-semibold">business school in Bangalore</strong>.
+              {subtext}
             </motion.p>
           </motion.div>
 
-          {/* Right: video in a #9080EE box */}
           <motion.div
             variants={{
               hidden: { opacity: 0, x: 60 },
@@ -88,11 +95,7 @@ export default function WhyChoose() {
             }}
             className="w-full rounded-2xl bg-brand-violet p-3 shadow-[0_20px_40px_rgba(0,0,0,0.2)] lg:ml-auto lg:max-w-150 lg:p-4"
           >
-            <VideoPlayer
-              src="images/home/reasons-video.mp4"
-              poster="images/home/reasons-video-poster.webp"
-              title="Why choose AIMS IBS"
-            />
+            <VideoPlayer src={videoUrl} poster={videoPoster} title="Why choose AIMS IBS" />
           </motion.div>
         </div>
       </div>

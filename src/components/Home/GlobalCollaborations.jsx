@@ -3,50 +3,77 @@ import Image from 'next/image';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay } from 'swiper/modules';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { getOptimizedImage } from '@/utils/image';
 
-const PARTNERS = [
+const DEFAULT_PARTNERS = [
   {
     name: 'Harvard Business Publishing Education',
-    logo: 'images/home/university-img-1.webp',
-    bg: 'images/home/card-bg-1.webp',
+    logo: { url: 'images/home/university-img-1.webp' },
+    bg: { url: 'images/home/card-bg-1.webp' },
   },
-  { name: 'IAE Bordeaux', logo: 'images/home/university-img-2.webp', bg: 'images/home/card-bg-2.webp' },
-  { name: 'SIM University', logo: 'images/home/university-img-3.webp', bg: 'images/home/card-bg-3.webp' },
-  { name: 'James Cook University', logo: 'images/home/university-img-4.webp', bg: 'images/home/card-bg-4.webp' },
   {
-    name: 'Singapore Human Resources Institute (SHRI)',
-    logo: 'images/home/university-img-5.webp',
-    bg: 'images/home/card-bg-1.webp',
+    name: 'IAE Bordeaux',
+    logo: { url: 'images/home/university-img-2.webp' },
+    bg: { url: 'images/home/card-bg-2.webp' },
   },
-  { name: 'University of Stirling', logo: 'images/home/university-img-6.webp', bg: 'images/home/card-bg-2.webp' },
-  { name: 'Staffordshire University', logo: 'images/home/university-img-7.webp', bg: 'images/home/card-bg-3.webp' },
-  { name: 'Putra Business School', logo: 'images/home/university-img-8.webp', bg: 'images/home/card-bg-4.webp' },
+  {
+    name: 'SIM University',
+    logo: { url: 'images/home/university-img-3.webp' },
+    bg: { url: 'images/home/card-bg-3.webp' },
+  },
+  {
+    name: 'James Cook University',
+    logo: { url: 'images/home/university-img-4.webp' },
+    bg: { url: 'images/home/card-bg-4.webp' },
+  },
+  {
+    name: 'Singapore Human Resources Institute',
+    logo: { url: 'images/home/university-img-5.webp' },
+    bg: { url: 'images/home/card-bg-1.webp' },
+  },
+  {
+    name: 'University of Stirling',
+    logo: { url: 'images/home/university-img-6.webp' },
+    bg: { url: 'images/home/card-bg-2.webp' },
+  },
+  {
+    name: 'Staffordshire University',
+    logo: { url: 'images/home/university-img-7.webp' },
+    bg: { url: 'images/home/card-bg-3.webp' },
+  },
+  {
+    name: 'Putra Business School',
+    logo: { url: 'images/home/university-img-8.webp' },
+    bg: { url: 'images/home/card-bg-4.webp' },
+  },
 ];
 
-// Loop mode needs more slides than are visible, so the list is repeated
-const LOOP_SLIDES = [...PARTNERS, ...PARTNERS];
-
-export default function GlobalCollaborations() {
+export default function GlobalCollaborations({ cmsData }) {
   const swiperRef = useRef(null);
+
+  const headingLight = cmsData?.headingLight ?? 'Global Collaborations &';
+  const headingBold = cmsData?.headingBold ?? 'International Exposure';
+  const subtext =
+    cmsData?.subtext ??
+    'Our students receive certifications, internships, sessions, projects, and orientation, exchange & twinning programs from a list of partnerships.';
+  const partners = cmsData?.partners?.length ? cmsData.partners : DEFAULT_PARTNERS;
+  const loopSlides = [...partners, ...partners];
 
   return (
     <section className="relative isolate overflow-hidden my-[44px] lg:my-[80px] bg-white [--edge:max(2rem,calc((100vw_-_1344px)/2_+_2rem))] lg:bg-[url('/images/home/global-collaboration-bg-img.webp')] bg-top lg:bg-cover">
-      {/* Top row: heading (left) + text & arrows (right) */}
       <div className="grid lg:grid-cols-2 lg:items-start lg:pt-20">
         <div className="px-[var(--edge)] pb-[4px] lg:pb-8 pt-6 lg:pb-0 pl-[16px] lg:pl-[5.8vw] lg:pr-4 lg:pt-0">
           <h2 className="text-[28px] sm:text-[32px] lg:text-[48px] lg:leading-tight">
-            <span className="block font-light">Global Collaborations &amp;</span>
-            <span className="block font-semibold italic">International Exposure</span>
+            <span className="block font-light">{headingLight}</span>
+            <span className="block font-semibold italic">{headingBold}</span>
           </h2>
           <span className="mt-2 block h-[3px] w-20 bg-gradient-to-r from-brand-orange to-transparent" />
         </div>
 
-        <div className="px-[var(--edge)] pb-2 pt-3 text-white lg:bg-transparent pl-[16px]  lg:pb-0 lg:pl-0 lg:pr-[var(--edge)] lg:pt-3">
+        <div className="px-[var(--edge)] pb-2 pt-3 text-white lg:bg-transparent pl-[16px] lg:pb-0 lg:pl-0 lg:pr-[var(--edge)] lg:pt-3">
           <p className="max-w-[560px] text-sm leading-relaxed text-[#000000] lg:text-white/90 sm:text-base lg:text-lg">
-            Our students receive certifications, internships, sessions, projects, and orientation, exchange &amp;
-            twinning programs from a list of partnerships.
+            {subtext}
           </p>
-
           <div className="mt-6 flex gap-0.5 justify-end">
             <button
               type="button"
@@ -68,7 +95,6 @@ export default function GlobalCollaborations() {
         </div>
       </div>
 
-      {/* Slider: starts at the container's left edge and bleeds to the right edge of the screen */}
       <div className="pb-6 pt-6 lg:bg-transparent lg:pb-16 lg:pt-10">
         <div className="pl-[16px] lg:pl-[var(--edge)]">
           <Swiper
@@ -85,29 +111,24 @@ export default function GlobalCollaborations() {
               swiperRef.current = swiper;
             }}
           >
-            {LOOP_SLIDES.map((p, i) => (
-              <SwiperSlide key={`${p.name}-${i}`} className="!w-[320px] lg:!w-[405px]">
+            {loopSlides.map((p, i) => (
+              <SwiperSlide key={i} className="!w-[320px] lg:!w-[405px]">
                 <article className="group relative aspect-[245/253] w-[calc(100%+1px)] overflow-hidden bg-[#4B3A9E]">
                   <Image
-                    src={process.env.IMG_PATH + p.bg}
+                    src={getOptimizedImage(p.bg?.url || p.bg || '', { width: 420 })}
                     alt=""
                     aria-hidden="true"
                     fill
                     sizes="(min-width: 1024px) 405px, 320px"
-                    quality={100}
-                    unoptimized
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                   />
-
                   <div className="relative z-10 flex h-full flex-col justify-between px-[30px] pb-[40px] pt-[40px] xl:px-[44px] xl:pb-[48px] xl:pt-[64px]">
                     <div className="relative max-h-[182px] min-h-[182px] w-full bg-white">
                       <Image
-                        src={process.env.IMG_PATH + p.logo}
-                        alt={p.name}
+                        src={getOptimizedImage(p.logo?.url || p.logo || '', { width: 320 })}
+                        alt={p.logo?.alt || p.name}
                         fill
                         sizes="320px"
-                        quality={100}
-                        unoptimized
                         className="object-contain"
                       />
                     </div>

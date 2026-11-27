@@ -14,7 +14,13 @@ export function middleware(request) {
   });
 }
 
-// Run on every route except static files and Next.js internals
+// Run on every route EXCEPT:
+//   - static files and Next.js internals (_next/*)
+//   - upload API routes — these receive large multipart bodies (video,
+//     PDF, images) and must NOT pass through middleware buffering so the
+//     10 MB middleware body cap doesn't truncate them.
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|api/admin/upload|api/admin/upload-local).*)',
+  ],
 };

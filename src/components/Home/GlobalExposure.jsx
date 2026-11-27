@@ -1,34 +1,35 @@
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { getOptimizedImage } from '@/utils/image';
 
-const COLUMNS = [
+const DEFAULT_COLUMNS = [
   [
-    { src: 'images/home/global-exposure-img-1.webp', alt: 'Students on international exchange, photo 1' },
-    { src: 'images/home/global-exposure-img-2.webp', alt: 'Students on international exchange, photo 2' },
+    { url: 'images/home/global-exposure-img-1.webp', alt: 'Students on international exchange, photo 1' },
+    { url: 'images/home/global-exposure-img-2.webp', alt: 'Students on international exchange, photo 2' },
   ],
-  [{ src: 'images/home/global-exposure-img-3.webp', alt: 'Students on international exchange, photo 3' }],
+  [{ url: 'images/home/global-exposure-img-3.webp', alt: 'Students on international exchange, photo 3' }],
   [
-    { src: 'images/home/global-exposure-img-4.webp', alt: 'Students on international exchange, photo 4' },
-    { src: 'images/home/global-exposure-img-5.webp', alt: 'Students on international exchange, photo 5' },
+    { url: 'images/home/global-exposure-img-4.webp', alt: 'Students on international exchange, photo 4' },
+    { url: 'images/home/global-exposure-img-5.webp', alt: 'Students on international exchange, photo 5' },
   ],
 ];
 
-const SHIFT = 80; // px the shapes travel
+const SHIFT = 80;
 const shapeTransition = { duration: 1, ease: 'easeOut' };
+const rightShape = { hidden: { y: -SHIFT }, visible: { y: 0, transition: shapeTransition } };
+const leftShape = { hidden: { y: SHIFT }, visible: { y: 0, transition: shapeTransition } };
 
-// Right shape: comes down from above into place
-const rightShape = {
-  hidden: { y: -SHIFT },
-  visible: { y: 0, transition: shapeTransition },
-};
+export default function GlobalExposure({ cmsData }) {
+  const headingLight = cmsData?.headingLight ?? 'Global Exposure &';
+  const headingBold = cmsData?.headingBold ?? 'International Exchange';
 
-// Bottom-left shape: comes up from below into place
-const leftShape = {
-  hidden: { y: SHIFT },
-  visible: { y: 0, transition: shapeTransition },
-};
+  // Build columns: prefer CMS col1/col2/col3 arrays, else defaults
+  const columns = [
+    cmsData?.col1?.length ? cmsData.col1 : DEFAULT_COLUMNS[0],
+    cmsData?.col2?.length ? cmsData.col2 : DEFAULT_COLUMNS[1],
+    cmsData?.col3?.length ? cmsData.col3 : DEFAULT_COLUMNS[2],
+  ];
 
-export default function GlobalExposure() {
   return (
     <motion.section
       initial="hidden"
@@ -40,51 +41,41 @@ export default function GlobalExposure() {
     >
       <div className="custom-container relative">
         <h2 className="text-[28px] sm:text-[32px] lg:text-[48px]">
-          <span className="font-light">Global Exposure &amp; </span>
-          <span className="font-semibold italic">International Exchange</span>
+          <span className="font-light">{headingLight} </span>
+          <span className="font-semibold italic">{headingBold}</span>
         </h2>
 
         <div className="relative mt-8 lg:mt-10">
-          {/* Top-right shape */}
           <motion.div
             aria-hidden="true"
             variants={rightShape}
             className="pointer-events-none absolute -right-10 -top-10 z-0 size-16 bg-[url('/images/home/shap-right.webp')] bg-contain bg-right-top bg-no-repeat md:-right-12 md:-top-12 md:size-20 lg:-right-15 lg:-top-15 lg:size-25"
           />
-
-          {/* Bottom-left shape */}
           <motion.div
             aria-hidden="true"
             variants={leftShape}
             className="pointer-events-none absolute -bottom-10 -left-10 z-0 size-16 bg-[url('/images/home/shap-left.webp')] bg-contain bg-left-bottom bg-no-repeat md:-bottom-12 md:-left-12 md:size-20 lg:-bottom-15 lg:-left-15 lg:size-25"
           />
 
-          {/* Photo grid */}
           <div className="relative z-10 grid grid-cols-3 gap-2 sm:gap-3">
-            {COLUMNS.map((col, i) => (
+            {columns.map((col, i) => (
               <div key={i} className="flex flex-col gap-2 sm:gap-3">
-                {col.map((photo) => (
+                {col.map((photo, pi) => (
                   <div
-                    key={photo.src}
+                    key={pi}
                     className={`group relative overflow-hidden ${col.length === 1 ? 'min-h-0 flex-1' : 'aspect-[260/187]'}`}
                   >
                     <Image
-                      src={process.env.IMG_PATH + photo.src}
-                      alt={photo.alt}
+                      src={getOptimizedImage(photo.url || photo, { width: 480 })}
+                      alt={photo.alt || `Global exposure photo ${pi + 1}`}
                       fill
                       sizes="(min-width: 1344px) 416px, 33vw"
-                      quality={100}
-                      unoptimized
                       className="object-cover transition-transform duration-700 ease-out group-hover:scale-110 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
                     />
-
-                    {/* Purple tint */}
                     <span
                       aria-hidden="true"
                       className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#3F2E8F]/60 via-[#3F2E8F]/10 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
                     />
-
-                    {/* Inner frame */}
                     <span
                       aria-hidden="true"
                       className="pointer-events-none absolute inset-2 scale-95 border border-white/80 opacity-0 transition-all duration-500 ease-out group-hover:scale-100 group-hover:opacity-100 sm:inset-3"
